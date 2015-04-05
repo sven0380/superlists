@@ -34,7 +34,7 @@ class HomePageTest(TestCase):
     def test_homepage_can_redirect_after_a_post_request(self):
         response = self.do_post_request_with_new_item('irrelevant name')
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
 
     def test_saving_and_retrieving_items(self):
         first_item = Item()
