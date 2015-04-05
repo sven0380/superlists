@@ -61,8 +61,7 @@ class HomePageTest(TestCase):
     def test_home_page_displays_all_list_items(self):
         Item.objects.create(text='my item 1')
         Item.objects.create(text='my item 2')
-        request = HttpRequest()
-        response = home_page(request)
+        response = self.client.get('/lists/the-only-list-in-the-world/')
         self.assertIn('my item 1', response.content.decode())
         self.assertIn('my item 2', response.content.decode())
 
