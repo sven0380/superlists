@@ -3,7 +3,7 @@ from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from lists.views import home_page
 from django.template.loader import render_to_string
-from lists.models import Item
+from lists.models import Item, List
 
 # Create your tests here.
 
@@ -24,26 +24,23 @@ class HomePageTest(TestCase):
         request.POST['item_text'] = 'A new list item'
         return home_page(request)
 
-    # def test_homepage_can_save_a_post_request(self):
-    #     item_text = 'A new list item'
-    #     response = self.do_post_request_with_new_item(item_text)
-    #     self.assertEqual(Item.objects.count(), 1)
-    #     new_item = Item.objects.first()
-    #     self.assertEqual(new_item.text, 'A new list item')
-    #
-    # def test_homepage_can_redirect_after_a_post_request(self):
-    #     response = self.do_post_request_with_new_item('irrelevant name')
-    #     self.assertEqual(response.status_code, 302)
-    #     self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
-
+class ListAndItemModelsTest(TestCase):
     def test_saving_and_retrieving_items(self):
+        list_ = List()
+        list_.save()
+
         first_item = Item()
         first_item.text = 'The first list item (like ever)'
+        first_item.list = list_
         first_item.save()
 
         second_item = Item()
         second_item.text = 'Item the second'
+        second_item.list = list_
         second_item.save()
+
+        saved_list = List.objects.first()
+        self.assertEqual(saved_list, list_)
 
         saved_items = Item.objects.all()
         self.assertEqual(saved_items.count(), 2)
@@ -51,25 +48,15 @@ class HomePageTest(TestCase):
         first_saved_item = saved_items[0]
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, 'The first list item (like ever)')
+        self.assertEqual(first_saved_item.list, list_)
         self.assertEqual(second_saved_item.text, 'Item the second')
-
-    # def test_homepage_only_saves_when_necessary(self):
-    #     request = HttpRequest()
-    #     home_page(request)
-    #     self.assertEqual(Item.objects.count(), 0)
-
-    def test_home_page_displays_all_list_items(self):
-        Item.objects.create(text='my item 1')
-        Item.objects.create(text='my item 2')
-        response = self.client.get('/lists/the-only-list-in-the-world/')
-        self.assertIn('my item 1', response.content.decode())
-        self.assertIn('my item 2', response.content.decode())
-
+        self.assertEqual(second_saved_item.list, list_)
 
 class ListViewTest(TestCase):
     def test_displays_all_items(self):
-        Item.objects.create(text='itemey 1')
-        Item.objects.create(text='itemey 2')
+        list_ = List.objects.create()
+        Item.objects.create(text='itemey 1', list=list_)
+        Item.objects.create(text='itemey 2', list=list_)
         response = self.client.get('/lists/the-only-list-in-the-world/')
         self.assertContains(response, 'itemey 1')
         self.assertContains(response, 'itemey 2')
